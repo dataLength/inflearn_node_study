@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({extended:true}));
 app.use(bodyParser.json());
 
 const mongoose = require('mongoose');
-mongoose.connect('mongodb+srv://dam:qweasdzxc@cluster0-hzpac.mongodb.net/test?retryWrites=true&w=majority',{
+mongoose.connect(config.mongoURI,{
     useNewUrlParser : true,
     useUnifiedTopology : true,
     useCreateIndex : true,
@@ -35,6 +35,32 @@ app.post('/register',(req,res) => {
             success:true
         });
     });
+});
+
+app.post('/login',(req,res)=>{
+    //요청된 이메일을 데이터베이스에서 있는지 찾음
+    User.findOne({email:req.body.email},(err,user)=>{
+        if(!user){
+            return res.json({
+                loginSuccess:false,
+                Message : "fail"
+            });
+        }else{
+            user.comparePassword(req.body.password,(err,isMatch)=>{
+                if (!isMatch){
+                    return res.json({loginSuccess:false, message:"비번X"});
+                }else{
+                    return res.json({loginSuccess:true});
+                }
+                /* //토큰 생성
+                user.generateToken((err,user)=>{
+
+                }); */
+
+            });
+        }
+    });
+    //비밀번호가 같은지 확인
 });
 
 app.listen(port,() => console.log(`example app listeninf on port ${port}!`));
